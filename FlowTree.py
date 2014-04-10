@@ -1,8 +1,9 @@
 import sublime, sublime_plugin
 
 class ExampleCommand(sublime_plugin.TextCommand):
+	msg = "Hello, World!"
 	def run(self, edit):
-		self.view.insert(edit, 0, "Hello, World!")
+		self.view.insert(edit, 0, ExampleCommand.msg)
 
 class Logger(sublime_plugin.EventListener):
 	def __init__(self):
@@ -11,6 +12,6 @@ class Logger(sublime_plugin.EventListener):
 		try:
 			edit = view.begin_edit('test')
 			self.storage.append(repr(view))
-			view.insert(edit, 0, repr(self.storage))
+			ExampleCommand.msg = repr(self.storage)
 		finally:
-			view.end_edit()
+			view.end_edit(edit)
