@@ -1,11 +1,11 @@
 import sublime, sublime_plugin
 from collections import namedtuple
 
-ViewNode = namedtuple('ViewNode', ['description', 'children'])
+ViewNode = namedtuple('ViewNode', ['description', 'children', 'is_search'])
 
 class ECommand(sublime_plugin.WindowCommand):
-	root_node = ViewNode('root node', [])
-	current_node = root_node
+	root_node = ViewNode('root node', [], False)
+	node_hist = [root_node]
 	node_index = {}
 	@classmethod
 	def visit_node(cls, view, search=False):
@@ -18,13 +18,16 @@ class ECommand(sublime_plugin.WindowCommand):
 			vid = str(view.id())
 
 		if vid in cls.node_index:
-			cls.current_node = cls.node_index[vid]
+			cls.node_hist.append(cls.node_index[vid])
 		else:
-			new_node = ViewNode(desc, [])
-			cls.current_node.children.append(new_node)
+			new_node = ViewNode(desc, [], search)
+			# Search views look for the most recent non-search view to use as their parent.
+			hist = [node for node in cls.node_hist if not node.is_search] if search else cls.node_hist
+			hist[-1].children.append(new_node)
 			cls.node_index[vid] = new_node
-			cls.current_node = new_node
-			print(cls.flow_tree())
+			cls.node_hist.append(new_node)
+		if len(cls.node_hist) > 20:
+			cls.node_hist = cls.node_hist[-10:]
 	@classmethod
 	def record_on_activated(cls, view):
 		if view.file_name():
