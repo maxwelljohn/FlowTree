@@ -31,16 +31,17 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 			return None
 	@classmethod
 	def visit_node(cls, view, is_search=False):
+		vid = str(view.id())
 		if is_search:
 			last_search = view.find_all('Searching \d+ files for .*$')[-1]
 			desc = view.substr(last_search)
-			vid = str(view.id()) + '-' + desc
+			node_id = vid + '-' + desc
 		else:
 			desc = os.path.basename(view.file_name()) + ' (' + view.file_name() + ')'
-			vid = str(view.id())
+			node_id = vid
 
-		if vid in cls.node_index:
-			cls.node_hist.append(cls.node_index[vid])
+		if node_id in cls.node_index:
+			cls.node_hist.append(cls.node_index[node_id])
 		else:
 			new_node = FlowNode(desc, [], is_search, True, view)
 			# Filter out nodes that have been closed; they can't be assigned parentage.
@@ -51,10 +52,17 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 			# the latest of those searches will be registered in the node history
 			# before you make your new search.  So without this your previous search would
 			# always be the parent of your new search.
+			# Also, searches typically don't inspire other searches.
 			hist = [node for node in cls.node_hist if not node.is_search] if is_search else cls.node_hist
 			hist[-1].children.append(new_node)
-			cls.node_index[vid] = new_node
+			cls.node_index[node_id] = new_node
+			if is_search:
+				for prev_search in cls.searches_in_view[vid]:
+					prev_search.is_open = False
+				cls.searches_in_view[vid].append(new_node)
 			cls.node_hist.append(new_node)
+
+		# Prevent history from getting too big.
 		if len(cls.node_hist) > 100:
 			cls.node_hist = cls.node_hist[-50:]
 	@classmethod
@@ -78,10 +86,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 		def show_node(node, indent):
 			result = '  ' * indent
 			# Checked box for closed files; unchecked box for open files.
-			if node.is_search:
-				result += u'? '
-			else:
-				result += u'\u2610 ' if node.is_open else u'\u2611 '
+			result += u'\u2610 ' if node.is_open else u'\u2611 '
 			result += node.description
 			result += '\n'
 			if node.was_modified:
@@ -102,13 +107,19 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 		return result
 	@classmethod
 	def on_close(cls, view):
-		if str(view.id()) in cls.node_index:
-			cls.node_index[str(view.id())].is_open = False
+		vid = str(view.id())
+		if vid in cls.node_index:
+			cls.node_index[vid].is_open = False
+			cls.update_flowtree_views()
+		elif vid in cls.searches_in_view:
+			for node in cls.searches_in_view[vid]:
+				node.is_open = False
 			cls.update_flowtree_views()
 	@classmethod
 	def on_modified(cls, view):
-		if str(view.id()) in cls.node_index:
-			cls.node_index[str(view.id())].was_modified = True
+		vid = str(view.id())
+		if vid in cls.node_index:
+			cls.node_index[vid].was_modified = True
 			cls.update_flowtree_views()
 	@classmethod
 	def update_flowtree_views(cls):
