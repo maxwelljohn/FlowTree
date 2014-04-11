@@ -12,7 +12,7 @@ class ViewNode(object):
 		self.view = view
 
 class ECommand(sublime_plugin.WindowCommand):
-	root_node = ViewNode('root node', [], False, True, None)
+	root_node = ViewNode(None, [], False, True, None)
 	node_hist = [root_node]
 	node_index = {}
 	@classmethod
@@ -83,7 +83,10 @@ class ECommand(sublime_plugin.WindowCommand):
 			for child in node.children:
 				result += show_node(child, indent + 1)
 			return result
-		return show_node(cls.root_node, 0)
+		result = ''
+		for child in cls.root_node.children:
+			result += show_node(child, 0)
+		return result
 	@classmethod
 	def record_on_close(cls, view):
 		if str(view.id()) in cls.node_index:
