@@ -55,6 +55,10 @@ class ECommand(sublime_plugin.WindowCommand):
 	def record_on_activated(cls, view):
 		if view.file_name():
 			cls.visit_node(view)
+	def record_on_post_save(cls, view):
+		# This if should always be True but maybe there's something I don't know.
+		if view.file_name():
+			cls.visit_node(view)
 	@classmethod
 	def record_on_deactivated(cls, view):
 		if 'Find Results' in view.name():
@@ -103,6 +107,8 @@ class Logger(sublime_plugin.EventListener):
 		ECommand.record_on_activated(view)
 	def on_deactivated(self, view):
 		ECommand.record_on_deactivated(view)
+	def on_post_save(self, view):
+		ECommand.record_on_post_save()
 	def on_close(self, view):
 		ECommand.record_on_close(view)
 	def on_modified(self, view):
