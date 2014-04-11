@@ -1,6 +1,6 @@
 import sublime, sublime_plugin
 import os
-from collections import namedtuple
+from collections import defaultdict
 
 class ViewNode(object):
 	def __init__(self, description, children, is_search, is_open, view):
@@ -15,6 +15,7 @@ class ECommand(sublime_plugin.WindowCommand):
 	root_node = ViewNode(None, [], False, True, None)
 	node_hist = [root_node]
 	node_index = {}
+	searches_in_view = defaultdict(list)
 	@classmethod
 	def summarize_selections(cls, view):
 		sels = view.sel()
@@ -49,6 +50,10 @@ class ECommand(sublime_plugin.WindowCommand):
 			hist[-1].children.append(new_node)
 			cls.node_index[vid] = new_node
 			cls.node_hist.append(new_node)
+			if is_search:
+				for node in cls.searches_in_view[str(view.id())]:
+					node.is_open = False
+				cls.searches_in_view[str(view.id())].append(new_node)
 		if len(cls.node_hist) > 100:
 			cls.node_hist = cls.node_hist[-50:]
 	@classmethod
