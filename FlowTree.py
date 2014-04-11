@@ -8,17 +8,22 @@ class ECommand(sublime_plugin.WindowCommand):
 	current_node = root_node
 	node_index = {}
 	@classmethod
-	def record_on_activated(cls, view):
+	def visit_node(cls, view, name):
 		vid = view.id()
-		if view.file_name():
-			if vid in cls.node_index:
-				cls.current_node = cls.node_index[vid]
-			else:
-				new_node = ViewNode(view.file_name(), [])
-				cls.current_node.children.append(new_node)
-				cls.node_index[vid] = new_node
-				cls.current_node = new_node
-				print(cls.flow_tree())
+		if vid in cls.node_index:
+			cls.current_node = cls.node_index[vid]
+		else:
+			new_node = ViewNode(name, [])
+			cls.current_node.children.append(new_node)
+			cls.node_index[vid] = new_node
+			cls.current_node = new_node
+			print(cls.flow_tree())
+	@classmethod
+	def record_on_activated(cls, view):
+		if 'Find Results' in view.name():
+			cls.visit_node(view, view.substr(view.line(0)))
+		elif view.file_name():
+			cls.visit_node(view, view.file_name())
 	@classmethod
 	def flow_tree(cls):
 		def show_node(node, indent):
