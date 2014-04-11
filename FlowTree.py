@@ -60,6 +60,7 @@ class ECommand(sublime_plugin.WindowCommand):
 	def record_on_activated(cls, view):
 		if view.file_name():
 			cls.visit_node(view)
+	@classmethod
 	def record_on_post_save(cls, view):
 		# This if should always be True but maybe there's something I don't know.
 		if view.file_name():
@@ -73,7 +74,10 @@ class ECommand(sublime_plugin.WindowCommand):
 		def show_node(node, indent):
 			result = '  ' * indent
 			# Checked box for closed files; unchecked box for open files.
-			result += u'\u2610 ' if node.is_open else u'\u2611 '
+			if node.is_search:
+				result += u'? '
+			else:
+				result += u'\u2610 ' if node.is_open else u'\u2611 '
 			result += node.description
 			result += '\n'
 			if node.was_modified:
@@ -116,7 +120,7 @@ class Logger(sublime_plugin.EventListener):
 	def on_deactivated(self, view):
 		ECommand.record_on_deactivated(view)
 	def on_post_save(self, view):
-		ECommand.record_on_post_save()
+		ECommand.record_on_post_save(view)
 	def on_close(self, view):
 		ECommand.record_on_close(view)
 	def on_modified(self, view):
