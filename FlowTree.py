@@ -1,4 +1,5 @@
 import sublime, sublime_plugin
+import os
 from collections import namedtuple
 
 class ViewNode(object):
@@ -33,7 +34,7 @@ class ECommand(sublime_plugin.WindowCommand):
 			desc = view.substr(last_search)
 			vid = str(view.id()) + '-' + desc
 		else:
-			desc = view.file_name()
+			desc = os.path.basename(view.file_name()) + ' (' + view.file_name() + ')'
 			vid = str(view.id())
 
 		if vid in cls.node_index:
@@ -62,6 +63,8 @@ class ECommand(sublime_plugin.WindowCommand):
 	def flow_tree(cls):
 		def show_node(node, indent):
 			result = '  ' * indent
+			# Checked box for closed files; unchecked box for open files.
+			result += u'\u2610 ' if node.is_open else u'\u2611 '
 			result += node.description
 			result += '\n'
 			if node.was_modified:
@@ -88,6 +91,7 @@ class ECommand(sublime_plugin.WindowCommand):
 	def run(self):
 		view = self.window.new_file()
 		view.set_name('Your FlowTree')
+		view.set_scratch(True)
 		edit = view.begin_edit('DisplayFlowTree')
 		try:
 			view.insert(edit, 0, ECommand.flow_tree())
