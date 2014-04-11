@@ -16,6 +16,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 	node_hist = [root_node]
 	node_index = {}
 	searches_in_view = defaultdict(list)
+	flowtree_views = []
 	@classmethod
 	def summarize_selections(cls, view):
 		sels = view.sel()
@@ -60,15 +61,18 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 	def on_activated(cls, view):
 		if view.file_name():
 			cls.visit_node(view)
+			cls.update_flowtree_views()
 	@classmethod
 	def on_post_save(cls, view):
 		# This if should always be True but maybe there's something I don't know.
 		if view.file_name():
 			cls.visit_node(view)
+			cls.update_flowtree_views()
 	@classmethod
 	def on_deactivated(cls, view):
 		if 'Find Results' in view.name():
 			cls.visit_node(view, True)
+			cls.update_flowtree_views()
 	@classmethod
 	def flow_tree(cls):
 		def show_node(node, indent):
@@ -100,19 +104,26 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 	def on_close(cls, view):
 		if str(view.id()) in cls.node_index:
 			cls.node_index[str(view.id())].is_open = False
+			cls.update_flowtree_views()
 	@classmethod
 	def on_modified(cls, view):
 		if str(view.id()) in cls.node_index:
 			cls.node_index[str(view.id())].was_modified = True
+			cls.update_flowtree_views()
+	@classmethod
+	def update_flowtree_views(cls):
+		for view in cls.flowtree_views:
+			edit = view.begin_edit('DisplayFlowTree')
+			try:
+				view.replace(edit, sublime.Region(0, view.size()), cls.flow_tree())
+			finally:
+				view.end_edit(edit)
 	def run(self):
+		my_cls = FlowTreeCommand
 		view = self.window.new_file()
 		view.set_name('Your FlowTree')
 		view.set_scratch(True)
-		edit = view.begin_edit('DisplayFlowTree')
-		try:
-			view.insert(edit, 0, FlowTreeCommand.flow_tree())
-		finally:
-			view.end_edit(edit)
+		my_cls.flowtree_views.append(view)
 
 class FlowTreeListener(sublime_plugin.EventListener):
 	def on_activated(self, view):
