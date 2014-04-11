@@ -2,16 +2,30 @@ import sublime, sublime_plugin
 from collections import namedtuple
 
 class ViewNode(object):
-	def __init__(self, description, children, is_search, is_open):
+	def __init__(self, description, children, is_search, is_open, view):
 		self.description = description
 		self.children = children
 		self.is_search = is_search
 		self.is_open = is_open
+		self.was_modified = False
+		self.view = view
 
 class ECommand(sublime_plugin.WindowCommand):
-	root_node = ViewNode('root node', [], False, True)
+	root_node = ViewNode('root node', [], False, True, None)
 	node_hist = [root_node]
 	node_index = {}
+	@classmethod
+	def summarize_selections(cls, view):
+		sels = view.sel()
+		if len(sels) > 1:
+			return "Multiple blocks of text left selected"
+		sel = view.substr(sels[0])
+		if len(sel) > 50:
+			return "Over 50 characters of text left selected"
+		elif sel:
+			return "Text left selected: " + repr(bytes(sel))
+		else:
+			return None
 	@classmethod
 	def visit_node(cls, view, is_search=False):
 		if is_search:
@@ -25,7 +39,7 @@ class ECommand(sublime_plugin.WindowCommand):
 		if vid in cls.node_index:
 			cls.node_hist.append(cls.node_index[vid])
 		else:
-			new_node = ViewNode(desc, [], is_search, True)
+			new_node = ViewNode(desc, [], is_search, True, view)
 			# Filter out nodes that have been closed; they can't be assigned parentage.
 			# (Mostly for the sake of searches.)
 			cls.node_hist = [node for node in cls.node_hist if node.is_open]
@@ -50,14 +64,27 @@ class ECommand(sublime_plugin.WindowCommand):
 			result = '  ' * indent
 			result += node.description
 			result += '\n'
+			if node.was_modified:
+				result += '  ' * (indent + 1)
+				result += 'Made modifications to this file'
+				result += '\n'
+			selections_summary = cls.summarize_selections(node.view) if node.view else None
+			if selections_summary:
+				result += '  ' * (indent + 1)
+				result += selections_summary
+				result += '\n'
 			for child in node.children:
 				result += show_node(child, indent + 1)
 			return result
 		return show_node(cls.root_node, 0)
 	@classmethod
 	def record_on_close(cls, view):
-		if cls.node_index[str(view.id())]:
+		if str(view.id()) in cls.node_index:
 			cls.node_index[str(view.id())].is_open = False
+	@classmethod
+	def record_on_modified(cls, view):
+		if str(view.id()) in cls.node_index:
+			cls.node_index[str(view.id())].was_modified = True
 	def run(self):
 		view = self.window.new_file()
 		view.set_name('Your FlowTree')
@@ -74,3 +101,5 @@ class Logger(sublime_plugin.EventListener):
 		ECommand.record_on_deactivated(view)
 	def on_close(self, view):
 		ECommand.record_on_close(view)
+	def on_modified(self, view):
+		ECommand.record_on_modified(view)
