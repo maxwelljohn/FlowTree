@@ -1,6 +1,6 @@
 [
     {
         "caption": "FlowTree: Show FlowTree",
-        "command": "e"
+        "command": "flow_tree"
     }
 ]
