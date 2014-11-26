@@ -37,7 +37,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 			desc = view.substr(last_search)
 			node_id = vid + '-' + desc
 		else:
-			desc = os.path.basename(view.file_name()) + ' (' + view.file_name() + ')'
+			desc = os.path.basename(view.file_name())
 			node_id = vid
 
 		if node_id in cls.node_index:
@@ -63,8 +63,8 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
 			cls.node_hist.append(new_node)
 
 		# Prevent history from getting too big.
-		if len(cls.node_hist) > 100:
-			cls.node_hist = cls.node_hist[-50:]
+		if len(cls.node_hist) > 10000:
+			cls.node_hist = cls.node_hist[-5000:]
 	@classmethod
 	def on_activated(cls, view):
 		if view.file_name():
