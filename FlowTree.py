@@ -15,6 +15,10 @@ class FlowNode(object):
         self.is_open = is_open
         self.was_modified = False
         self.view = view
+    def completed(self):
+        return not self.is_open and all([child.completed() for child in self.children])
+    def clear_completed_children(self):
+        self.children = [child for child in self.children if not child.completed()]
 
 class FlowTreeCommand(sublime_plugin.WindowCommand):
     root_node = FlowNode(None, [], False, True, None)
@@ -110,6 +114,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
                 result += show_node(child, indent + 1)
             return result
         result = ''
+        cls.root_node.clear_completed_children()
         for child in cls.root_node.children:
             result += show_node(child, 0)
         return result
