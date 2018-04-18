@@ -1,3 +1,8 @@
+try:
+    from .Edit import Edit as Edit
+except:
+    from Edit import Edit as Edit
+
 import sublime, sublime_plugin
 import os
 from collections import defaultdict
@@ -22,13 +27,16 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
         sels = view.sel()
         if len(sels) > 1:
             return "Multiple blocks of text left selected"
-        sel = view.substr(sels[0])
-        if len(sel) > 50:
-            return "Over 50 characters of text left selected"
-        elif sel:
-            return "Text left selected: " + repr(bytes(sel))
-        else:
+        elif len(sels) == 0:
             return None
+        else:
+            sel = view.substr(sels[0])
+            if sel == '':
+                return None
+            elif len(sel) > 50:
+                return "Over 50 characters of text left selected"
+            else:
+                return "Text left selected: " + repr(sel)
     @classmethod
     def visit_node(cls, view, is_search=False):
         vid = str(view.id())
@@ -124,11 +132,8 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
     @classmethod
     def update_flowtree_views(cls):
         for view in cls.flowtree_views:
-            edit = view.begin_edit('DisplayFlowTree')
-            try:
-                view.replace(edit, sublime.Region(0, view.size()), cls.flow_tree())
-            finally:
-                view.end_edit(edit)
+            with Edit(view) as edit:
+                edit.replace(sublime.Region(0, view.size()), cls.flow_tree())
     def run(self):
         my_cls = FlowTreeCommand
         view = self.window.new_file()
