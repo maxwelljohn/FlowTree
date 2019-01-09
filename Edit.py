@@ -1,3 +1,4 @@
+# From https://bit.ly/2J5C7SC
 # edit.py
 # buffer editing for both ST2 and ST3 that "just works"
 
