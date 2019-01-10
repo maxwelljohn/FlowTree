@@ -18,7 +18,7 @@ Open a file from a codebase you're working on and run the 'FlowTree: Show FlowTr
 
 In this example, the user is fixing a frobnitz-related bug that requires making changes to the frobnitz model, the frobnitz view, and the frobnitz controller.  Because frobnitz.py was the file that was open immediately before each of frobnitz_controller.py, frobnitz_model.py, and frobnitz_view.py were opened, they are each displayed as children of frobnitz.py.  Midway through fixing frobnitz_model.py, the user realizes that widget needs a refactor and searches the repository for the string "widget".  Partway through editing widget.py, they open widget_factory.py to make some changes there.  At each stage, it's possible to see where the user is in the task as a whole and what still needs to be done.
 
-As buffers get closed, the empty box ☐ turns into a checked box ☑ to indicate completion of that part of the task.  When the very first buffer which was opened gets closed, the entire FlowTree diagram disappears to get ready for the next task.
+As buffers get closed, the empty box ☐ turns into a checked box to indicate completion of that part of the task.  In the above screenshot, the user finished making modifications to frobnitz_controller.py and closed the file, causing its box to become checked.  When the very first buffer which was opened gets closed, the entire FlowTree diagram disappears to get ready for the next task.
 
 To provide further reminders about where you are in your editing workflow, if you leave text selected in a buffer before opening a new buffer, the text you left selected gets displayed alongside the old buffer in the FlowTree diagram.  This can be used to leave hints for yourself about what you were doing.
 
