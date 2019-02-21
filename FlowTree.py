@@ -143,6 +143,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
         view.set_name('Your FlowTree')
         view.set_scratch(True)
         my_cls.flowtree_views.append(view)
+        my_cls.update_flowtree_views()
 
 class FlowTreeListener(sublime_plugin.EventListener):
     def on_activated(self, view):
