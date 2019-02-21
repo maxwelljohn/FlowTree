@@ -1,8 +1,3 @@
-try:
-    from .Edit import Edit as Edit
-except:
-    from Edit import Edit as Edit
-
 import sublime, sublime_plugin
 import os
 from collections import defaultdict
@@ -19,6 +14,10 @@ class FlowNode(object):
         return not self.is_open and all([child.completed() for child in self.children])
     def clear_completed_children(self):
         self.children = [child for child in self.children if not child.completed()]
+
+class WriteTreeCommand(sublime_plugin.TextCommand):
+    def run(self, edit, tree):
+        self.view.replace(edit, sublime.Region(0, self.view.size()), tree)
 
 class FlowTreeCommand(sublime_plugin.WindowCommand):
     root_node = FlowNode(None, [], False, True, None)
@@ -137,8 +136,7 @@ class FlowTreeCommand(sublime_plugin.WindowCommand):
     @classmethod
     def update_flowtree_views(cls):
         for view in cls.flowtree_views:
-            with Edit(view) as edit:
-                edit.replace(sublime.Region(0, view.size()), cls.flow_tree())
+            view.run_command('write_tree', {'tree': cls.flow_tree()})
     def run(self):
         my_cls = FlowTreeCommand
         view = self.window.new_file()

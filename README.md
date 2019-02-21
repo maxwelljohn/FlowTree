@@ -2,11 +2,11 @@
 
 Cognitive science research shows that humans can only store a few things in our working memory at once.  So what happens when programmers do tasks that are too big to fit in our working memory?  You're debugging the frobnitz, and midway through you realize that the simplest fix involves refactoring the widget, which in turn requires reworking the widget factory.  By the time you're back at the frobnitz, the frobnitz-related info that was in your working memory has been replaced.  You waste time recovering that lost context, and you may introduce bugs if you misremember what's been done or forget something that needs to be done.
 
-FlowTree is a Sublime Text plugin designed to help with this problem.  By automatically building a diagram of the files you open and why you open them, it can help you make complicated code changes faster and more reliably.
+FlowTree is a Sublime Text 3 plugin designed to help with this problem.  By automatically building a diagram of the files you open and why you open them, it can help you make complicated code changes faster and more reliably.
 
 ## Installation
 
-To install via Package Control, run the 'Package Control: Install Package' command and choose the FlowTree package.
+To install via Package Control, run the 'Package Control: Install Package' command and choose the FlowTree package.  (If you aren't able to find it, maybe try updating Sublime Text to the latest version.)
 
 To install manually, e.g. if you want to do development, clone the repository into the Packages directory in your Sublime Text 3 settings folder.
 
@@ -33,8 +33,4 @@ I made this for a hackathon and there might be bugs.  Please report issues [here
 ## Authors
 
 **John Maxwell** - [maxwelljohn](https://github.com/maxwelljohn)
-
-## Acknowledgments
-
-Thanks to [titoBouzout](https://github.com/titoBouzout) for [this](https://github.com/titoBouzout/Open-Include/blob/master/Edit.py) buffer editing code.
 
